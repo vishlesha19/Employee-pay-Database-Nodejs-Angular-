@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="employeeApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+<style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 150vh;
+      margin: 0;
+    }
+
+    .container {
+      display: flex;
+      width: 90%;
+      margin: 10px;
+    }
+
+    .heading {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .table-container,
+    .form-container {
+      flex-grow: 1;
+      padding: 40px;
+      box-sizing: border-box;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin: 0 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #FF12F4;
+      font-size: 18px;
+    }
+
+    h4 {
+      color: #FF12F4;
+      font-size: 18px;
+    }
+
+    h1 {
+      color: #FF12F4;
+      font-size: 30px;
+    }
+
+    form {
+      margin-top: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #151415;
+    }
+
+    input {
+      width: calc(100% - 16px);
+      padding: 8px;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #FFA1FB;
+      color: black;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #F46EFF;
+    }
+  </style>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body>
+  <h1 class="heading">Employee Pay Database</h1>
+  <div class="container" ng-controller="EmployeeController">
+    <div class="form-container">
+      <h4 class="heading">Employee Data Form</h4>
+      <form ng-submit="submitForm()">
+        <label for="empName">Employee Name:</label>
+        <input type="text" id="empName" ng-model="employee.name" required>
+        
+        <label for="empSalary">Employee Salary:</label>
+        <input type="text" id="empSalary" ng-model="employee.salary" required>
+
+        <button type="submit">Add Employee</button>
+      </form>
+
+      <h4 class="heading">Update Employee Data</h4>
+      <form ng-submit="updateForm()">
+        <label for="updateId">Employee ID to Update:</label>
+        <input type="text" id="updateId" ng-model="updateEmployee.id" required>
+        
+        <label for="updateName">Updated Name:</label>
+        <input type="text" id="updateName" ng-model="updateEmployee.name" required>
+        
+        <label for="updateSalary">Updated Salary:</label>
+        <input type="text" id="updateSalary" ng-model="updateEmployee.salary" required>
+
+        <button type="submit">Update Data</button>
+      </form>
+
+      <h4 class="heading">Delete Employee</h4>
+      <form ng-submit="deleteForm()">
+        <label for="deleteId">Employee ID to Delete:</label>
+        <input type="text" id="deleteId" ng-model="deleteEmployee.id" required>
+
+        <button type="submit">Delete Employee</button>
+      </form>
+    </div>
+
+    <div class="table-container">
+      <h4 class="heading">Employee Data Table</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Salary</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="employee in employees">
+            <td>{{ employee.id }}</td>
+            <td>{{ employee.name }}</td>
+            <td>{{ employee.salary }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    angular.module('employeeApp', [])
+      .controller('EmployeeController', function ($scope, $http) {
+        $scope.employee = {};
+        $scope.updateEmployee = {};
+        $scope.deleteEmployee = {};
+
+        function fetchData() {
+          $http.get('/fetchdata')
+            .then(function (response) {
+              $scope.employees = response.data;
+            })
+            .catch(function (error) {
+              console.error('Error fetching data:', error);
+            });
+        }
+
+        $scope.submitForm = function () {
+          $http.post('/submit', $scope.employee)
+            .then(function (response) {
+              alert(response.data);
+              fetchData(); // Refresh data after submission
+              $scope.employee = {}; // Clear the form
+            })
+            .catch(function (error) {
+              console.error('Error submitting form:', error);
+            });
+        };
+
+        $scope.updateForm = function () {
+          $http.put(`/update/${$scope.updateEmployee.id}`, $scope.updateEmployee)
+            .then(function (response) {
+              alert(response.data);
+              fetchData(); // Refresh data after update
+              $scope.updateEmployee = {}; // Clear the form
+            })
+            .catch(function (error) {
+              console.error('Error updating employee:', error);
+            });
+        };
+
+        $scope.deleteForm = function () {
+          $http.delete(`/delete/${$scope.deleteEmployee.id}`)
+            .then(function (response) {
+              alert(response.data);
+              fetchData(); // Refresh data after deletion
+              $scope.deleteEmployee = {}; // Clear the form
+            })
+            .catch(function (error) {
+              console.error('Error deleting employee:', error);
+            });
+        };
+
+        // Fetch initial data
+        fetchData();
+      });
+  </script>
+</body>
+</html>
